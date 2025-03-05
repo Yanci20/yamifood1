@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .custom-color {
+            background-color: #d0a772;
+            border-color: #d0a772;
+        }
+        .border-gray {
+            border-color: #d1d5db; /* Tailwind's bg-gray-300 */
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-4">
+        <h1 class="text-4xl font-bold text-center mb-6">Carrito</h1>
+        <div class="flex justify-center space-x-4 mb-6">
+            <button id="seguirComprando" class="custom-color text-white py-2 px-4 rounded-full shadow-md hover:bg-blue-600">
+                Seguir comprando
+            </button>
+            <button id="vaciarCarrito" class="custom-color text-white py-2 px-4 rounded-full shadow-md hover:bg-red-600">
+                Vaciar carrito
+            </button>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white border border-gray">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="py-2 px-4 border border-gray custom-color">Imagen</th>
+                        <th class="py-2 px-4 border border-gray custom-color">Precio</th>
+                        <th class="py-2 px-4 border border-gray custom-color">Cantidad</th>
+                        <th class="py-2 px-4 border border-gray custom-color">Total</th>
+                        <th class="py-2 px-4 border border-gray custom-color">Eliminar</th>
+                    </tr>
+                </thead>
+                <tbody id="cartItems"></tbody>
+            </table>
+        </div>
+        <div class="mt-6 bg-gray-200 p-4 rounded-lg shadow-md">
+            <h2 class="text-xl font-bold mb-4">Total del carrito</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-gray-300 p-2 custom-color">Total</div>
+                <div class="bg-gray-300 p-2 custom-color" id="totalCarrito">$0.00</div>
+            </div>
+            <div class="flex justify-center mt-4">
+                <button id="realizarPedido" class="custom-color text-white py-2 px-4 rounded-full shadow-md hover:bg-green-600">
+                    Realizar pedido
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function cargarCarrito() {
+            let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+            let tbody = document.getElementById("cartItems");
+            let total = 0;
+            tbody.innerHTML = "";
+            carrito.forEach((producto, index) => {
+                let subtotal = producto.precio * producto.cantidad;
+                total += subtotal;
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="py-2 px-4 border border-gray"><img src="${producto.imagen}" height="50" width="50"></td>
+                        <td class="py-2 px-4 border border-gray">$${producto.precio.toFixed(2)}</td>
+                        <td class="py-2 px-4 border border-gray">
+                            <input type="number" min="1" value="${producto.cantidad}" onchange="actualizarCantidad(${index}, this.value)" class="w-12 text-center border mx-2">
+                        </td>
+                        <td class="py-2 px-4 border border-gray">$${subtotal.toFixed(2)}</td>
+                        <td class="py-2 px-4 border border-gray text-center text-red-500 cursor-pointer" onclick="eliminarProducto(${index})">X</td>
+                    </tr>`;
+            });
+            document.getElementById("totalCarrito").textContent = `$${total.toFixed(2)}`;
+        }
+
+        function actualizarCantidad(index, cantidad) {
+            let carrito = JSON.parse(localStorage.getItem("carrito"));
+            if (cantidad < 1) cantidad = 1;
+            carrito[index].cantidad = parseInt(cantidad);
+            localStorage.setItem("carrito", JSON.stringify(carrito));
+            cargarCarrito();
+        }
+
+        function eliminarProducto(index) {
+            let carrito = JSON.parse(localStorage.getItem("carrito"));
+            carrito.splice(index, 1);
+            localStorage.setItem("carrito", JSON.stringify(carrito));
+            cargarCarrito();
+        }
+
+        document.getElementById('seguirComprando').addEventListener('click', function() {
+            window.location.href = 'menu.html';
+        });
+
+        document.getElementById('vaciarCarrito').addEventListener('click', function() {
+            localStorage.removeItem("carrito");
+            cargarCarrito();
+        });
+
+        document.getElementById('realizarPedido').addEventListener('click', function() {
+            let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+            if (carrito.length === 0) {
+                alert("El carrito está vacío. Por favor, añade productos antes de realizar el pedido.");
+            } else {
+                window.location.href = 'pedido.html';
+            }
+        });
+
+        // Cargar el carrito al abrir la página
+        cargarCarrito();
+    </script>
+</body>
+</html>
